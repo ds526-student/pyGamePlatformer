@@ -12,7 +12,7 @@ class Character(pygame.sprite.Sprite):
     def __init__(self,
                  x, # the x position of the player
                  y, # the y position of the player
-                 image_path, # the location of the player image 
+                 character_image_path="assets/player/character.png", # the location of the player image 
                  velocity_x=veocityX, # horizontal speed
                  velocity_y=velocityY, # vertical speed
                  jump_height=jumpHeight, # the height of the jump
@@ -20,7 +20,8 @@ class Character(pygame.sprite.Sprite):
                 ):
         
         super().__init__()
-        self.image = pygame.image.load(image_path).convert_alpha()
+        self.image = pygame.image.load(character_image_path).convert_alpha()
+        self.image = pygame.transform.scale(self.image, (50, 50))
         self.rect = self.image.get_rect(topleft=(x, y))
         self.velocity_x = velocity_x
         self.velocity_y = velocity_y
@@ -58,3 +59,19 @@ class Character(pygame.sprite.Sprite):
             if self.velocity_y < -self.jumpheight:
                 self.jumping = False
                 self.velocity_y = jumpHeight
+
+    def check_collisions(self, platforms):
+        # check collisions with every platform
+        for platform in platforms:
+            if self.rect.colliderect(platform):
+                # If player is falling and hits a platform from above
+                if self.velocity_y <= 0 and self.rect.bottom <= platform.top + 10:
+                    self.rect.bottom = platform.top
+                    self.jumping = False
+                    self.velocity_y = 0
+                else:
+                    # Push player out of platform horizontally
+                    if self.rect.centerx < platform.centerx:
+                        self.rect.right = platform.left
+                    else:
+                        self.rect.left = platform.right
